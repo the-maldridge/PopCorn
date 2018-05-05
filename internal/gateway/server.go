@@ -1,4 +1,4 @@
-package repo
+package gateway
 
 import (
 	"context"
