@@ -1,18 +1,30 @@
 package main
 
 import (
-	"os/exec"
-	"log"
 	"bytes"
+	"context"
 	"flag"
-	"time"
-	"os"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
+	"os"
+	"os/exec"
+	"strings"
+	"time"
+
+	"github.com/golang/protobuf/proto"
+	"google.golang.org/grpc"
+
+	pb "github.com/the-maldridge/popcorn/internal/proto"
 )
 
 var (
 	uuidPath = flag.String("uuid_path", "/etc/popcorn/uuid", "Path to the uuid file")
+
+	server = flag.String("server", "localhost", "Server to send stats to")
+	port   = flag.Int("port", 8080, "Port to use on the server")
+
 	machineID = []byte{}
 )
 
@@ -30,11 +42,7 @@ func getUUID() []byte {
 	return ID
 }
 
-func main() {
-	flag.Parse()
-	machineID = getUUID()
-	log.Printf("Machine ID: %s", machineID)
-
+func getPkgs() []*pb.Package {
 	_, err := exec.LookPath("xbps-query")
 	if err != nil {
 		log.Println("xbps-query isn't in $PATH.  Are you sure this is a Void system?")
@@ -47,16 +55,70 @@ func main() {
 	if err := xbpsQueryCmd.Run(); err != nil {
 		log.Fatal(err)
 	}
-	log.Println(out.String())
 
-	_, err = exec.LookPath("xuname")
+	pkgs := []*pb.Package{}
+	for _, p := range strings.Split(out.String(), "\n") {
+		parts := strings.Split(p, "-")
+		pkg := pb.Package{
+			Name:    proto.String(strings.Join(parts[:len(parts)-1], "")),
+			Version: proto.String(parts[len(parts)-1]),
+		}
+		if pkg.GetName() == "" {
+			continue
+		}
+		pkgs = append(pkgs, &pkg)
+	}
+	return pkgs
+}
+
+func getXUname() *pb.XUname {
+	var out bytes.Buffer
+	_, err := exec.LookPath("xuname")
 	if err != nil {
-		return
+		return nil
 	}
 	xunameCmd := exec.Command("xuname")
 	xunameCmd.Stdout = &out
 	if err := xunameCmd.Run(); err != nil {
 		log.Fatal(err)
 	}
-	log.Println(out.String())
+	fields := strings.Fields(out.String())
+	log.Println(fields)
+
+	return &pb.XUname{
+		OSName:       proto.String(fields[0]),
+		Kernel:       proto.String(fields[1]),
+		Mach:         proto.String(fields[2]),
+		CPUInfo:      proto.String(fields[3]),
+		UpdateStatus: proto.String(fields[4]),
+		RepoStatus:   proto.String(fields[5]),
+	}
+}
+
+func sendStats() {
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", *server, *port), opts...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	client := pb.NewPopCornClient(conn)
+
+	q := pb.Stats{
+		HostID: machineID,
+		Pkgs:   getPkgs(),
+		XUname: getXUname(),
+	}
+
+	_, err = client.Update(context.Background(), &q)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func main() {
+	flag.Parse()
+	machineID = getUUID()
+	sendStats()
 }

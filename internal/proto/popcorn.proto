@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+service PopCorn {
+  rpc Update(Stats) returns (StatsConfirmation) {}
+}
+
+message StatsConfirmation {}
+
+message Stats {
+  required bytes HostID = 1;
+  repeated Package Pkgs = 2;
+  optional XUname XUname = 3;
+}
+
+message Package {
+  required string Name = 1;
+  required string Version = 2;
+}
+
+message XUname {
+  optional string OSName = 1;
+  optional string Kernel = 2;
+  optional string Mach = 3;
+  optional string CPUInfo = 4;
+  optional string UpdateStatus = 5;
+  optional string RepoStatus = 6;
+}
