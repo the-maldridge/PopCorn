@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -12,7 +13,6 @@ import (
 	"os/exec"
 	"strings"
 	"time"
-	"crypto/sha256"
 
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
@@ -25,6 +25,8 @@ var (
 
 	server = flag.String("server", "localhost", "Server to send stats to")
 	port   = flag.Int("port", 8080, "Port to use on the server")
+
+	statInterval = flag.Duration("interval", 24*time.Hour, "Interval to send stats on")
 
 	machineID = ""
 )
@@ -120,5 +122,8 @@ func sendStats() {
 func main() {
 	flag.Parse()
 	machineID = getUUID()
-	sendStats()
+
+	for range time.Tick(*statInterval) {
+		sendStats()
+	}
 }
