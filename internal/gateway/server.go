@@ -2,12 +2,17 @@ package gateway
 
 import (
 	"context"
+	"flag"
 	"log"
 
-	"google.golang.org/grpc/peer"
 	"github.com/the-maldridge/popcorn/internal/repo"
+	"google.golang.org/grpc/peer"
 
 	pb "github.com/the-maldridge/popcorn/internal/proto"
+)
+
+var (
+	resetKey = flag.String("reset_key", "", "Key required to reset the stats repo")
 )
 
 type StatsRepo struct {
@@ -38,5 +43,11 @@ func (s *StatsRepo) Report(ctx context.Context, r *pb.ReportRequest) (*pb.StatsR
 		return nil, err
 	}
 	log.Println("Report Requested")
+
+	if r.GetResetRepo() && r.GetResetKey() == *resetKey {
+		s.repo.Reset()
+		log.Println("Stats repo reset")
+	}
+
 	return &pb.StatsReport{Report: d}, nil
 }

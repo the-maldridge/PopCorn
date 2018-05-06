@@ -31,18 +31,21 @@ type StatsRepo struct {
 	XuRepoStatus   map[string]int
 }
 
+func (r *StatsRepo) initMaps() {
+	r.LastSeen = make(map[string]time.Time)
+	r.Packages = make(map[string]int)
+	r.Versions = make(map[string]map[string]int)
+	r.XuOSName = make(map[string]int)
+	r.XuKernel = make(map[string]int)
+	r.XuMach = make(map[string]int)
+	r.XuCPUInfo = make(map[string]int)
+	r.XuUpdateStatus = make(map[string]int)
+	r.XuRepoStatus = make(map[string]int)
+}
+
 func New() *StatsRepo {
-	r := &StatsRepo{
-		LastSeen:       make(map[string]time.Time),
-		Packages:       make(map[string]int),
-		Versions:       make(map[string]map[string]int),
-		XuOSName:       make(map[string]int),
-		XuKernel:       make(map[string]int),
-		XuMach:         make(map[string]int),
-		XuCPUInfo:      make(map[string]int),
-		XuUpdateStatus: make(map[string]int),
-		XuRepoStatus:   make(map[string]int),
-	}
+	r := &StatsRepo{}
+	r.initMaps()
 
 	go r.checkpointTimer()
 
@@ -113,4 +116,9 @@ func (r *StatsRepo) checkpointTimer() {
 			needCheckpoint = false
 		}
 	}
+}
+
+func (r *StatsRepo) Reset() {
+	os.Remove(*checkpointFile)
+	r.initMaps()
 }

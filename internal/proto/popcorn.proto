@@ -28,7 +28,10 @@ message XUname {
   optional string RepoStatus = 6;
 }
 
-message ReportRequest {}
+message ReportRequest {
+  optional bool ResetRepo = 1;
+  optional string ResetKey = 2;
+}
 
 message StatsReport {
   required bytes Report = 1;

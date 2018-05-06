@@ -19,17 +19,23 @@ var (
 )
 
 // Get the report
-type reportCmd struct{ path string }
+type reportCmd struct {
+	path  string
+	reset bool
+	key   string
+}
 
 func (*reportCmd) Name() string     { return "report" }
 func (*reportCmd) Synopsis() string { return "Request a report from the server" }
 func (*reportCmd) Usage() string {
-	return `report --output <file>
+	return `report --output <file> [--reset --key <key]
 Write a report to the specified file.
 `
 }
 func (r *reportCmd) SetFlags(f *flag.FlagSet) {
-	flag.StringVar(&r.path, "file", "output.json", "File to write the output to")
+	f.StringVar(&r.path, "file", "output.json", "File to write the output to")
+	f.BoolVar(&r.reset, "reset", false, "Reset the repository after getting the report")
+	f.StringVar(&r.key, "key", "", "Key to reset the repo with")
 }
 func (r *reportCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	opts := []grpc.DialOption{grpc.WithInsecure()}
@@ -42,7 +48,12 @@ func (r *reportCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 
 	client := pb.NewPopCornClient(conn)
 
-	result, err := client.Report(context.Background(), &pb.ReportRequest{})
+	req := pb.ReportRequest{
+		ResetRepo: &r.reset,
+		ResetKey:  &r.key,
+	}
+
+	result, err := client.Report(context.Background(), &req)
 	if err != nil {
 		fmt.Println(err)
 		return subcommands.ExitFailure
