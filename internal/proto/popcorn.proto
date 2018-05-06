@@ -7,7 +7,7 @@ service PopCorn {
 message StatsConfirmation {}
 
 message Stats {
-  required bytes HostID = 1;
+  required string HostID = 1;
   repeated Package Pkgs = 2;
   optional XUname XUname = 3;
 }

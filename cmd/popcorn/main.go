@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	"crypto/sha256"
 
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
@@ -25,21 +26,21 @@ var (
 	server = flag.String("server", "localhost", "Server to send stats to")
 	port   = flag.Int("port", 8080, "Port to use on the server")
 
-	machineID = []byte{}
+	machineID = ""
 )
 
-func getUUID() []byte {
+func getUUID() string {
 	ID, err := ioutil.ReadFile(*uuidPath)
 	if os.IsNotExist(err) {
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		ID = make([]byte, 96)
-		log.Println(r.Read(ID))
-		log.Println(ID)
+		r.Read(ID)
 		if err := ioutil.WriteFile(*uuidPath, ID, 0644); err != nil {
 			log.Fatal(err)
 		}
 	}
-	return ID
+	h := sha256.Sum256(ID)
+	return fmt.Sprintf("%x", h)
 }
 
 func getPkgs() []*pb.Package {
@@ -60,7 +61,7 @@ func getPkgs() []*pb.Package {
 	for _, p := range strings.Split(out.String(), "\n") {
 		parts := strings.Split(p, "-")
 		pkg := pb.Package{
-			Name:    proto.String(strings.Join(parts[:len(parts)-1], "")),
+			Name:    proto.String(strings.Join(parts[:len(parts)-1], "-")),
 			Version: proto.String(parts[len(parts)-1]),
 		}
 		if pkg.GetName() == "" {
@@ -83,7 +84,6 @@ func getXUname() *pb.XUname {
 		log.Fatal(err)
 	}
 	fields := strings.Fields(out.String())
-	log.Println(fields)
 
 	return &pb.XUname{
 		OSName:       proto.String(fields[0]),
@@ -106,7 +106,7 @@ func sendStats() {
 	client := pb.NewPopCornClient(conn)
 
 	q := pb.Stats{
-		HostID: machineID,
+		HostID: &machineID,
 		Pkgs:   getPkgs(),
 		XUname: getXUname(),
 	}

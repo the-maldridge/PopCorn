@@ -8,8 +8,10 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "github.com/the-maldridge/popcorn/internal/proto"
 	"github.com/the-maldridge/popcorn/internal/gateway"
+	"github.com/the-maldridge/popcorn/internal/repo"
+
+	pb "github.com/the-maldridge/popcorn/internal/proto"
 )
 
 var (
@@ -29,6 +31,6 @@ func main() {
 
 	var opts []grpc.ServerOption
 	srvr := grpc.NewServer(opts...)
-	pb.RegisterPopCornServer(srvr, &gateway.StatsRepo{})
+	pb.RegisterPopCornServer(srvr, gateway.New(repo.New()))
 	srvr.Serve(l)
 }
