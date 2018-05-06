@@ -2,6 +2,8 @@ syntax = "proto2";
 
 service PopCorn {
   rpc Update(Stats) returns (StatsConfirmation) {}
+
+  rpc Report(ReportRequest) returns (StatsReport) {}
 }
 
 message StatsConfirmation {}
@@ -24,4 +26,10 @@ message XUname {
   optional string CPUInfo = 4;
   optional string UpdateStatus = 5;
   optional string RepoStatus = 6;
+}
+
+message ReportRequest {}
+
+message StatsReport {
+  required bytes Report = 1;
 }
