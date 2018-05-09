@@ -97,7 +97,10 @@ func getXUname() *pb.XUname {
 	}
 }
 
-func sendStats() {
+func main() {
+	flag.Parse()
+	machineID = getUUID()
+
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", *server, *port), opts...)
 	if err != nil {
@@ -116,14 +119,5 @@ func sendStats() {
 	_, err = client.Update(context.Background(), &q)
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-func main() {
-	flag.Parse()
-	machineID = getUUID()
-
-	for range time.Tick(*statInterval) {
-		sendStats()
 	}
 }
