@@ -1,0 +1,32 @@
+syntax = "proto2";
+
+service PQuery {
+  rpc GetPackageStats(PkgStatQuery) returns (PackageStats) {}
+}
+
+message DateRange {
+  optional int64 StartTime = 1;
+  optional int64 EndTime = 2;
+  optional string Duration = 3;
+}
+
+message PkgStatQuery {
+  required string PkgName = 1;
+  optional DateRange Interval = 2;
+}
+
+message PkgVersion {
+  required string Version = 1;
+  required int32 Installs = 2;
+}
+
+message PkgDay {
+  required string Date = 1;
+  repeated PkgVersion Versions = 2;
+}
+
+message PackageStats {
+  required int32 Installs = 1;
+  repeated string Versions = 2;
+  repeated PkgDay CalendarStats = 3;
+}

@@ -21,6 +21,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/hashicorp/go-version"
+  packages = ["."]
+  revision = "23480c0665776210b5fbbac6eaaee40e3e6a96b7"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -94,6 +100,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "68c37212281d80ef0c3533083792fbde00efe45a3df124cb8b9e335fea03519d"
+  inputs-digest = "4dafe1307b95fb21faf7230a3a0a0c890af0b8b32f605425226315445c51a24c"
   solver-name = "gps-cdcl"
   solver-version = 1
