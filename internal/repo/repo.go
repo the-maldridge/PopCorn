@@ -14,6 +14,7 @@ import (
 var (
 	checkpointFile     = flag.String("checkpoint_file", "/var/lib/popcorn/checkpoint.json", "Location of checkpoint file")
 	checkpointInterval = flag.Duration("checkpoint_interval", 15*time.Minute, "Frequency of checkpoints")
+	checkpointEnabled  = flag.Bool("checkpoint_enabled", true, "Make automatic state checkpoints")
 	minUpdateInterval  = flag.Duration("min_update_interval", 24*time.Hour, "Minimum time between updates to be accepted")
 
 	needCheckpoint = false
@@ -48,7 +49,9 @@ func New() *StatsRepo {
 	r := &StatsRepo{}
 	r.initMaps()
 
-	go r.checkpointTimer()
+	if *checkpointEnabled {
+		go r.checkpointTimer()
+	}
 
 	d, err := ioutil.ReadFile(*checkpointFile)
 	if os.IsNotExist(err) {
