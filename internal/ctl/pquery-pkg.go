@@ -108,6 +108,11 @@ func (r *PkgQueryCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface
 }
 
 func printQuickStats(s *pb.PackageStats) {
+	if len(s.GetVersions()) == 0 {
+		fmt.Println("PopCorn doesn't know of any installs for this package")
+		return
+	}
+
 	fmt.Printf("According to PopCorn data, there are at least %d installs on the following versions:\n", s.GetInstalls())
 
 	versions := s.GetVersions()
