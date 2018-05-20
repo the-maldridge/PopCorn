@@ -99,8 +99,8 @@ func (r *PkgQueryCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface
 		printQuickStats(result)
 	case "date":
 		printDateStats(result)
-	case "gnuplot":
-		printGNUPlotScript(result)
+	case "csv":
+		printCSV(result)
 	default:
 		printQuickStats(result)
 	}
@@ -167,7 +167,7 @@ func printDateStats(s *pb.PackageStats) {
 	}
 }
 
-func printGNUPlotScript(s *pb.PackageStats) {
+func printCSV(s *pb.PackageStats) {
 	seperator := ","
 
 	// The versions need to be sorted for this to work
