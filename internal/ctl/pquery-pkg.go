@@ -99,6 +99,8 @@ func (r *PkgQueryCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface
 		printQuickStats(result)
 	case "date":
 		printDateStats(result)
+	case "gnuplot":
+		printGNUPlotScript(result)
 	default:
 		printQuickStats(result)
 	}
@@ -155,6 +157,77 @@ func printDateStats(s *pb.PackageStats) {
 
 		for _, v := range vers {
 			fmt.Printf("%s:%d ", v.GetVersion(), v.GetInstalls())
+		}
+		fmt.Printf("\n")
+	}
+}
+
+func printGNUPlotScript(s *pb.PackageStats) {
+	seperator := ","
+
+	// The versions need to be sorted for this to work
+	versions := s.GetVersions()
+	sort.Slice(versions, func(i, j int) bool {
+		left, err := version.NewVersion(strings.Replace(versions[i], "_", ".", 1))
+		if err != nil {
+			fmt.Println(err)
+		}
+		right, _ := version.NewVersion(strings.Replace(versions[j], "_", ".", 1))
+		return left.LessThan(right)
+	})
+
+	// Print out the version headers
+	fmt.Printf("Date%s", seperator)
+	for i, v := range versions {
+		fmt.Printf("%s", v)
+		i++
+		if i >= len(versions) {
+			fmt.Printf("\n")
+		} else {
+			fmt.Printf(seperator)
+		}
+	}
+
+	// Print the data
+	// The data needs to be sorted by date
+	stats := s.GetCalendarStats()
+	sort.Slice(stats, func(i, j int) bool {
+		left, err := time.Parse("2006-01-02", *stats[i].Date)
+		if err != nil {
+			fmt.Println(err)
+		}
+		right, err := time.Parse("2006-01-02", *stats[j].Date)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return left.Before(right)
+	})
+
+	for _, s := range stats {
+		fmt.Printf("%s%s", *s.Date, seperator)
+		vers := s.GetVersions()
+		sort.Slice(vers, func(i, j int) bool {
+			left, err := version.NewVersion(strings.Replace(vers[i].GetVersion(), "_", ".", 1))
+			if err != nil {
+				fmt.Println(err)
+			}
+			right, _ := version.NewVersion(strings.Replace(vers[j].GetVersion(), "_", ".", 1))
+			return left.LessThan(right)
+		})
+
+		// Print out the versions
+		for i, j := 0, 0; i < len(versions); i++ {
+			if versions[i] == vers[j].GetVersion() {
+				fmt.Printf("%d", vers[j].GetInstalls())
+				if j+1 <= len(vers)-1 {
+					j++
+				}
+			} else {
+				fmt.Printf("0")
+			}
+			if i != len(versions)-1 {
+				fmt.Printf(seperator)
+			}
 		}
 		fmt.Printf("\n")
 	}
