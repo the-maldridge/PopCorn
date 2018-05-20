@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/radovskyb/watcher"
 	"google.golang.org/grpc"
 
 	"github.com/the-maldridge/popcorn/internal/repo"
@@ -146,7 +147,39 @@ func main() {
 	log.Println("pqueryd is starting...")
 	log.Printf("Stats files will be read from %s", *data_dir)
 
-	loadData()
+	// Spin off the reloader
+	w := watcher.New()
+	w.SetMaxEvents(1)
+	go func() {
+		for {
+			select {
+			case <-w.Event:
+				log.Println("Data reload required")
+				loadData()
+			case err := <-w.Error:
+				log.Fatalln(err)
+			case <-w.Closed:
+				return
+			}
+		}
+	}()
+	if err := w.Add(*data_dir); err != nil {
+		log.Fatalln(err)
+	}
+
+	// Trigger the initial load
+	go func() {
+		w.Wait()
+		w.TriggerEvent(watcher.Create, nil)
+	}()
+
+	// Start the watching process
+	go func() {
+		if err := w.Start(time.Minute); err != nil {
+			log.Fatalln(err)
+		}
+		log.Println("Successfully started watcher to load new stats files")
+	}()
 
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *addr, *port))
 	if err != nil {
@@ -156,5 +189,6 @@ func main() {
 	var opts []grpc.ServerOption
 	srvr := grpc.NewServer(opts...)
 	pqpb.RegisterPQueryServer(srvr, &PQueryServer{})
+	log.Println("Ready to serve...")
 	srvr.Serve(l)
 }

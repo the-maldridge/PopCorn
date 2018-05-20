@@ -26,6 +26,12 @@
   revision = "23480c0665776210b5fbbac6eaaee40e3e6a96b7"
 
 [[projects]]
+  name = "github.com/radovskyb/watcher"
+  packages = ["."]
+  revision = "6145e1439b9de93806925353403f91d2abbad8a5"
+  version = "v1.0.2"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = [
@@ -100,6 +106,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4dafe1307b95fb21faf7230a3a0a0c890af0b8b32f605425226315445c51a24c"
+  inputs-digest = "64fec43bae086c956f571831b870574fc4e89cade3edba4f697688fa7807bf84"
   solver-name = "gps-cdcl"
   solver-version = 1
