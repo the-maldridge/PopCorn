@@ -51,3 +51,7 @@ func (s *StatsRepo) Report(ctx context.Context, r *pb.ReportRequest) (*pb.StatsR
 
 	return &pb.StatsReport{Report: d}, nil
 }
+
+func (s *StatsRepo) Ping(ctx context.Context, r *pb.EmptyRequest) (*pb.EmptyResponse, error) {
+	return &pb.EmptyResponse{}, nil
+}

@@ -101,14 +101,50 @@ func main() {
 	flag.Parse()
 	machineID = getUUID()
 
+	backoff := []time.Duration{
+		5 * time.Second,
+		5 * time.Second,
+		5 * time.Second,
+		10 * time.Second,
+		10 * time.Second,
+		10 * time.Second,
+		1 * time.Minute,
+		1 * time.Minute,
+		1 * time.Minute,
+	}
+
+	var conn *grpc.ClientConn
+	var err error
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", *server, *port), opts...)
-	if err != nil {
-		log.Fatal(err)
+
+	for i, d := range backoff {
+		conn, err = grpc.Dial(fmt.Sprintf("%s:%d", *server, *port), opts...)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error connecting: %s\n", err)
+			time.Sleep(d)
+			if i == len(backoff)-1 {
+				fmt.Fprintf(os.Stderr, "Exhausted retry attempts during connect\n")
+				os.Exit(1)
+			}
+			continue
+		}
+		break
 	}
 	defer conn.Close()
 
 	client := pb.NewPopCornClient(conn)
+	for i, d := range backoff {
+		if _, err = client.Ping(context.Background(), &pb.EmptyRequest{}); err != nil {
+			time.Sleep(d)
+			if i == len(backoff)-1 {
+				fmt.Fprintf(os.Stderr, "Exhausted retry attempts during ping\n")
+				os.Exit(1)
+			}
+			fmt.Println("Retrying ping")
+			continue
+		}
+		break
+	}
 
 	q := pb.Stats{
 		HostID: &machineID,

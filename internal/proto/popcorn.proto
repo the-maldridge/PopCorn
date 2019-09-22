@@ -1,6 +1,8 @@
 syntax = "proto2";
 
 service PopCorn {
+  rpc Ping(EmptyRequest) returns(EmptyResponse) {}
+
   rpc Update(Stats) returns (StatsConfirmation) {}
 
   rpc Report(ReportRequest) returns (StatsReport) {}
@@ -36,3 +38,6 @@ message ReportRequest {
 message StatsReport {
   required bytes Report = 1;
 }
+
+message EmptyRequest {}
+message EmptyResponse {}
