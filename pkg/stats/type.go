@@ -26,7 +26,7 @@ type Repo struct {
 // A RepoDataSlice is the active slice that a repo server is acting on
 // at any given time.
 type RepoDataSlice struct {
-	*sync.RWMutex
+	mutex sync.RWMutex
 
 	UniqueInstalls int
 	Seen           map[string]struct{}

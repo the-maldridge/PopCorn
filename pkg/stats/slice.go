@@ -30,7 +30,7 @@ func (rds *RepoDataSlice) AddStats(id string, s Stats) {
 		return
 	}
 
-	rds.Lock()
+	rds.mutex.Lock()
 	rds.Seen[id] = struct{}{}
 	rds.UniqueInstalls++
 
@@ -50,14 +50,14 @@ func (rds *RepoDataSlice) AddStats(id string, s Stats) {
 		rds.XuUpdateStatus[s.XUname.UpdateStatus]++
 		rds.XuRepoStatus[s.XUname.RepoStatus]++
 	}
-	rds.Unlock()
+	rds.mutex.Unlock()
 }
 
 // MarhsalJSON handles marshalling while respecting the mutex that is
 // required since this is a map backed structure.
 func (rds *RepoDataSlice) MarhsalJSON() ([]byte, error) {
 	type writeableSlice RepoDataSlice
-	rds.RLock()
-	defer rds.RUnlock()
+	rds.mutex.RLock()
+	defer rds.mutex.RUnlock()
 	return json.Marshal((*writeableSlice)(rds))
 }
