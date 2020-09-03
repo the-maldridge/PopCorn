@@ -20,7 +20,7 @@ func main() {
 	}
 
 	appLogger := hclog.New(&hclog.LoggerOptions{
-		Name:  "statrepo",
+		Name:  "popcornd",
 		Level: hclog.LevelFromString(llevel),
 	})
 
