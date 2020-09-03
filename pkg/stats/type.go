@@ -1,6 +1,8 @@
 package stats
 
 import (
+	"sync"
+
 	"github.com/hashicorp/go-hclog"
 	"github.com/labstack/echo/v4"
 )
@@ -24,6 +26,8 @@ type Repo struct {
 // A RepoDataSlice is the active slice that a repo server is acting on
 // at any given time.
 type RepoDataSlice struct {
+	*sync.RWMutex
+
 	UniqueInstalls int
 	Seen           map[string]struct{}
 	Packages       map[string]int
