@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -40,6 +41,8 @@ func New() *StatsRepo {
 }
 
 func (s *StatsRepo) Update(ctx context.Context, r *pb.Stats) (*pb.StatsConfirmation, error) {
+	log.Printf("Proxy request from %s", r.GetHostID())
+
 	pkgs := []stats.Package{}
 	for _, p := range r.GetPkgs() {
 		pkgs = append(pkgs, stats.Package{
