@@ -50,6 +50,7 @@ func (rds *RepoDataSlice) AddStats(id string, s Stats) {
 		rds.XuUpdateStatus[s.XUname.UpdateStatus]++
 		rds.XuRepoStatus[s.XUname.RepoStatus]++
 	}
+	rds.dirty = true
 	rds.mutex.Unlock()
 }
 

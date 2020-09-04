@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 
 	"github.com/the-maldridge/popcorn/pkg/stats"
+	"github.com/the-maldridge/popcorn/pkg/stats/memory"
 )
 
 var ()
@@ -24,7 +25,7 @@ func main() {
 		Level: hclog.LevelFromString(llevel),
 	})
 
-	sr := stats.New(appLogger)
+	sr := stats.New(appLogger, memory.New())
 
 	bind := os.Getenv("BIND")
 	if bind == "" {
@@ -46,4 +47,5 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	sr.Shutdown(ctx)
+	appLogger.Info("Goodbye!")
 }

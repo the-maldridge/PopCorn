@@ -5,13 +5,14 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/labstack/echo/v4"
+	"github.com/robfig/cron/v3"
 )
 
 // A Store is a mechanism that can persist stats in a long term
 // fashion.
 type Store interface {
-	PutSlice(string, RepoDataSlice) error
-	GetSlice(string) (RepoDataSlice, error)
+	PutSlice(string, *RepoDataSlice) error
+	GetSlice(string) (*RepoDataSlice, error)
 }
 
 // A Repo has a set of methods for accepting stats and for then
@@ -19,14 +20,21 @@ type Store interface {
 type Repo struct {
 	*echo.Echo
 
+	store Store
+
+	cron *cron.Cron
+
 	log          hclog.Logger
 	currentSlice *RepoDataSlice
+	currentKey   string
 }
 
 // A RepoDataSlice is the active slice that a repo server is acting on
 // at any given time.
 type RepoDataSlice struct {
 	mutex sync.RWMutex
+
+	dirty bool
 
 	UniqueInstalls int
 	Seen           map[string]struct{}
