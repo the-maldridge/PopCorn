@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 
 	"github.com/the-maldridge/popcorn/pkg/stats"
+	_ "github.com/the-maldridge/popcorn/pkg/stats/fs"
 	_ "github.com/the-maldridge/popcorn/pkg/stats/memory"
 )
 

@@ -1,7 +1,6 @@
 package memory
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/hashicorp/go-hclog"
@@ -43,7 +42,7 @@ func (m *mem) GetSlice(k string) (*stats.RepoDataSlice, error) {
 	defer m.mutex.RUnlock()
 	s, ok := m.d[k]
 	if !ok {
-		return nil, errors.New("slice not found")
+		return nil, stats.ErrNoSuchSlice
 	}
 	return s, nil
 }

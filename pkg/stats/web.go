@@ -29,7 +29,12 @@ func (r *Repo) getStats(c echo.Context) error {
 		return c.JSON(http.StatusOK, r.currentSlice)
 	}
 
-	return c.JSON(http.StatusOK, r.loadSlice(c.Param("key")))
+	slice, err := r.loadSlice(c.Param("key"))
+	if err == ErrNoSuchSlice {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	return c.JSON(http.StatusOK, slice)
 }
 
 func (r *Repo) listSlices(c echo.Context) error {

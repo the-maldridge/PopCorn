@@ -34,7 +34,12 @@ func New(l hclog.Logger, s Store) *Repo {
 	r.GET("/v1/stats", r.listSlices)
 
 	r.currentKey = time.Now().Format(keyfmt)
-	r.currentSlice = r.loadSlice(r.currentKey)
+
+	var err error
+	r.currentSlice, err = r.loadSlice(r.currentKey)
+	if err == ErrNoSuchSlice {
+		r.currentSlice = NewRDS()
+	}
 
 	r.cron = cron.New()
 	r.cron.AddFunc(syncCron, r.sync)
@@ -62,6 +67,12 @@ func (r *Repo) Shutdown(ctx context.Context) {
 
 // sync flushes the current slice to disk.
 func (r *Repo) sync() {
+	if r.currentSlice == nil {
+		// Syncing before the current slice has been
+		// initialized.
+		return
+	}
+
 	if !r.currentSlice.dirty {
 		return
 	}
@@ -73,13 +84,8 @@ func (r *Repo) sync() {
 
 // loadSlice tries to load the current slice or will create a new
 // slice ot use if the current slice cannot be found.
-func (r *Repo) loadSlice(k string) *RepoDataSlice {
-	s, err := r.store.GetSlice(k)
-	if err != nil {
-		r.log.Warn("No slice for key, returning a new one", "key", k)
-		return NewRDS()
-	}
-	return s
+func (r *Repo) loadSlice(k string) (*RepoDataSlice, error) {
+	return r.store.GetSlice(k)
 }
 
 // rotate handles the daily changeover of rotating and persisting
@@ -92,7 +98,13 @@ func (r *Repo) rotate() {
 	oKey := r.currentKey
 
 	r.currentKey = time.Now().Format(keyfmt)
-	r.currentSlice = r.loadSlice(r.currentKey)
+	newSlice, err := r.loadSlice(r.currentKey)
+	if err == ErrNoSuchSlice {
+		newSlice = NewRDS()
+	} else if err != nil {
+		r.log.Warn("Error rotating slice", "error", err)
+	}
+	r.currentSlice = newSlice
 
 	if err := r.store.PutSlice(oKey, oSlice); err != nil {
 		r.log.Error("Error persisting slice", "error", err)
