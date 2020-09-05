@@ -38,7 +38,7 @@ func (r *Repo) listSlices(c echo.Context) error {
 		r.log.Warn("Error listing slices", "error", err)
 		return err
 	}
-	return c.JSON(http.StatusOK, struct{
+	return c.JSON(http.StatusOK, struct {
 		Keys []string
 	}{
 		Keys: keys,

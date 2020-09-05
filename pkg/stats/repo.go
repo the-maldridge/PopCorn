@@ -14,7 +14,7 @@ const (
 	keyfmt = "2006-01-02"
 
 	syncCron = "*/15 * * * *"
-	rotCron = "1 0 * * *"
+	rotCron  = "1 0 * * *"
 )
 
 // New returns an repo server that can accept stats and produce

@@ -17,6 +17,16 @@ type Store interface {
 	ListSlices() ([]string, error)
 }
 
+// A StoreFactory returns a store who's logger is parented to the
+// logger provided to the factory.
+type StoreFactory func(hclog.Logger) (Store, error)
+
+// A Callback is a function that can be used to register a
+// StoreFactory to the list of stores that are available.  This allows
+// certain initialization tasks to be deferred until after config file
+// loading and logger setup have completed.
+type Callback func()
+
 // A Repo has a set of methods for accepting stats and for then
 // persisting those aggregate stats to a local or remote store.
 type Repo struct {

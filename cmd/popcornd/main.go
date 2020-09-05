@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 
 	"github.com/the-maldridge/popcorn/pkg/stats"
-	"github.com/the-maldridge/popcorn/pkg/stats/memory"
+	_ "github.com/the-maldridge/popcorn/pkg/stats/memory"
 )
 
 var ()
@@ -25,7 +25,16 @@ func main() {
 		Level: hclog.LevelFromString(llevel),
 	})
 
-	sr := stats.New(appLogger, memory.New())
+	stats.SetStoreParentLogger(appLogger)
+	stats.DoCallbacks()
+
+	store, err := stats.NewStore(os.Getenv("STORE"))
+	if err != nil {
+		appLogger.Error("Error initializing storage", "error", err)
+		os.Exit(1)
+	}
+
+	sr := stats.New(appLogger, store)
 
 	bind := os.Getenv("BIND")
 	if bind == "" {

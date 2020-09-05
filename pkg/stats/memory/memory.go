@@ -4,6 +4,8 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/hashicorp/go-hclog"
+
 	"github.com/the-maldridge/popcorn/pkg/stats"
 )
 
@@ -13,12 +15,20 @@ type mem struct {
 	d map[string]*stats.RepoDataSlice
 }
 
+func init() {
+	stats.RegisterCallback(cb)
+}
+
+func cb() {
+	stats.RegisterStore("memory", New)
+}
+
 // New returns an in memory implementation of stats.Store from the
 // stats package.
-func New() stats.Store {
+func New(hclog.Logger) (stats.Store, error) {
 	m := new(mem)
 	m.d = make(map[string]*stats.RepoDataSlice)
-	return m
+	return m, nil
 }
 
 func (m *mem) PutSlice(k string, v *stats.RepoDataSlice) error {
