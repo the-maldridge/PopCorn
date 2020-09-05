@@ -13,6 +13,8 @@ import (
 type Store interface {
 	PutSlice(string, *RepoDataSlice) error
 	GetSlice(string) (*RepoDataSlice, error)
+
+	ListSlices() ([]string, error)
 }
 
 // A Repo has a set of methods for accepting stats and for then

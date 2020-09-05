@@ -37,3 +37,15 @@ func (m *mem) GetSlice(k string) (*stats.RepoDataSlice, error) {
 	}
 	return s, nil
 }
+
+func (m *mem) ListSlices() ([]string, error) {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+	o := make([]string, len(m.d))
+	i := 0
+	for k := range m.d {
+		o[i] = k
+		i++
+	}
+	return o, nil
+}

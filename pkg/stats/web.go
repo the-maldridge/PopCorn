@@ -31,3 +31,16 @@ func (r *Repo) getStats(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, r.loadSlice(c.Param("key")))
 }
+
+func (r *Repo) listSlices(c echo.Context) error {
+	keys, err := r.store.ListSlices()
+	if err != nil {
+		r.log.Warn("Error listing slices", "error", err)
+		return err
+	}
+	return c.JSON(http.StatusOK, struct{
+		Keys []string
+	}{
+		Keys: keys,
+	})
+}

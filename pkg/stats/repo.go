@@ -31,6 +31,7 @@ func New(l hclog.Logger, s Store) *Repo {
 
 	r.POST("/v1/stats/add", r.addStats)
 	r.GET("/v1/stats/:key", r.getStats)
+	r.GET("/v1/stats", r.listSlices)
 
 	r.currentKey = time.Now().Format(keyfmt)
 	r.currentSlice = r.loadSlice(r.currentKey)
