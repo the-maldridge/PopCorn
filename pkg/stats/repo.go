@@ -11,14 +11,10 @@ import (
 )
 
 const (
-	//keyfmt = "2006-01-02"
+	keyfmt = "2006-01-02"
 
-	//syncCron = "*/15 * * * *"
-	//rotCron = "1 0 * * *"
-
-	keyfmt   = "3:4"
-	syncCron = "* * * * *"
-	rotCron  = "*/5 * * * *"
+	syncCron = "*/15 * * * *"
+	rotCron = "1 0 * * *"
 )
 
 // New returns an repo server that can accept stats and produce
@@ -34,7 +30,7 @@ func New(l hclog.Logger, s Store) *Repo {
 	p.Use(r.Echo)
 
 	r.POST("/v1/stats/add", r.addStats)
-	r.GET("/v1/stats/current", r.getCurrentStats)
+	r.GET("/v1/stats/:key", r.getStats)
 
 	r.currentKey = time.Now().Format(keyfmt)
 	r.currentSlice = r.loadSlice(r.currentKey)
@@ -101,5 +97,5 @@ func (r *Repo) rotate() {
 		r.log.Error("Error persisting slice", "error", err)
 		return
 	}
-	r.log.Info("Data slice rotated", "current_key", r.currentKey)
+	r.log.Info("Data slice rotated", "current", r.currentKey, "old", oKey)
 }

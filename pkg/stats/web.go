@@ -24,6 +24,10 @@ func (r *Repo) addStats(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (r *Repo) getCurrentStats(c echo.Context) error {
-	return c.JSON(http.StatusOK, r.currentSlice)
+func (r *Repo) getStats(c echo.Context) error {
+	if c.Param("key") == "current" {
+		return c.JSON(http.StatusOK, r.currentSlice)
+	}
+
+	return c.JSON(http.StatusOK, r.loadSlice(c.Param("key")))
 }
