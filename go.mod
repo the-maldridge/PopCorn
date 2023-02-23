@@ -8,9 +8,8 @@ require (
 	github.com/google/subcommands v0.0.0-20180305171600-a3682377147e
 	github.com/hashicorp/go-version v0.0.0-20180322230233-23480c066577
 	github.com/radovskyb/watcher v1.0.2
-	golang.org/x/net v0.0.0-20180502164142-640f4622ab69
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
-	golang.org/x/text v0.3.0
-	google.golang.org/genproto v0.0.0-20180427144745-86e600f69ee4
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
+	golang.org/x/text v0.3.8 // indirect
+	google.golang.org/genproto v0.0.0-20180427144745-86e600f69ee4 // indirect
 	google.golang.org/grpc v1.11.3
 )
